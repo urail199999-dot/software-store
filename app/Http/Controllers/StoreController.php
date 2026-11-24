@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -57,29 +58,55 @@ class StoreController extends Controller
     public function checkout(Request $request, Product $product)
     {
         abort_unless(Product::published()->whereKey($product->id)->exists(), 404);
+        if ($request->user() && ! $request->user()->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+        if ($request->user()) {
+            $request->merge(['email' => $request->user()->email]);
+        }
         $data = $request->validate(['email' => 'required|email|max:254']);
         if (! $product->availableKeys()->exists()) {
             return back()->withErrors(['stock' => 'Товар закончился.']);
         }
         $token = Str::random(64);
-        Order::create(['product_id' => $product->id, 'product_name' => $product->name, 'email' => $data['email'], 'amount' => $product->price, 'access_hash' => hash('sha256', $token)]);
+        $order = Order::create(['product_id' => $product->id, 'product_name' => $product->name, 'email' => $data['email'], 'amount' => $product->price, 'access_hash' => hash('sha256', $token), 'user_id' => $request->user()?->id]);
+
+        if ($request->user()) {
+            return redirect()->route('account.order', $order);
+        }
 
         return redirect()->route('order.show', $token);
     }
 
-    public function show(string $token)
+    public function show(Request $request, string $token)
     {
         $order = Order::where('access_hash', hash('sha256', $token))->firstOrFail();
+        if ($order->user_id) {
+            return $this->accountOrderRedirect($request, $order, false);
+        }
 
         return response()->view('store.order', compact('order', 'token'))->header('Cache-Control', 'no-store, private')->header('Referrer-Policy', 'no-referrer')->header('X-Robots-Tag', 'noindex, nofollow');
     }
 
-    public function download(string $token)
+    public function download(Request $request, string $token)
     {
         $order = Order::where('access_hash', hash('sha256', $token))->firstOrFail();
         abort_unless($order->status === 'paid' && $order->licenseKey, 403);
+        if ($order->user_id) {
+            return $this->accountOrderRedirect($request, $order, true);
+        }
         abort_unless(filter_var($order->download_url, FILTER_VALIDATE_URL) && in_array(parse_url($order->download_url, PHP_URL_SCHEME), ['https', 'http']), 404);
 
         return redirect()->away($order->download_url)->header('Referrer-Policy', 'no-referrer')->header('Cache-Control', 'no-store');
+    }
+
+    private function accountOrderRedirect(Request $request, Order $order, bool $download): RedirectResponse
+    {
+        if (! $request->user()) {
+            return redirect()->guest(route('login'));
+        }
+        abort_unless($order->user_id === $request->user()->id, 404);
+
+        return redirect()->route($download ? 'account.download' : 'account.order', $order);
     }
 }

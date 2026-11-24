@@ -12,7 +12,7 @@ class Order extends Model
 
     protected function casts(): array
     {
-        return ['paid_at' => 'datetime', 'download_url' => 'encrypted'];
+        return ['paid_at' => 'datetime', 'download_url' => 'encrypted', 'user_id' => 'integer'];
     }
 
     public function product()
