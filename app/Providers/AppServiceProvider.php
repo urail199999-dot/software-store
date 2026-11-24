@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole() && PHP_OS_FAMILY === 'Windows') {
+            // PHP needs these directories when Artisan starts its HTTP server.
+            ServeCommand::$passthroughVariables = array_values(array_unique([
+                ...ServeCommand::$passthroughVariables,
+                'TEMP',
+                'TMP',
+                'TMPDIR',
+            ]));
+        }
     }
 }
