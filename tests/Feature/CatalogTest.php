@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\LicenseKey;
 use App\Models\Product;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -91,9 +92,10 @@ class CatalogTest extends TestCase
         Storage::fake('public');
         $this->loginAdmin();
         $category = Category::factory()->create();
-        Livewire::test(ManageProducts::class)->callAction('create', data: ['name' => 'Новая программа', 'slug' => 'new-program', 'category_id' => $category->id, 'description' => 'Описание', 'price' => 25000, 'download_url' => 'https://example.com/download.zip', 'is_active' => true, 'sort_order' => 0, 'image' => [$this->image('cover.png')], 'gallery' => [$this->image('screen.png')]])->assertHasNoFormErrors();
+        Livewire::test(ManageProducts::class)->callAction('create', data: ['name' => 'Новая программа', 'slug' => 'new-program', 'category_id' => $category->id, 'description' => 'Описание', 'price' => '250,00', 'download_url' => 'https://example.com/download.zip', 'is_active' => true, 'sort_order' => 0, 'image' => [$this->image('cover.png')], 'gallery' => [$this->image('screen.png')]])->assertHasNoFormErrors();
         $product = Product::where('slug', 'new-program')->firstOrFail();
         $this->assertEquals($category->id, $product->category_id);
+        $this->assertEquals(25000, $product->price);
         Storage::disk('public')->assertExists($product->image);
         $this->assertCount(1, $product->gallery);
         Storage::disk('public')->assertExists($product->gallery[0]);
@@ -106,5 +108,30 @@ class CatalogTest extends TestCase
         Livewire::test(ManageCategories::class)->callAction('create', data: ['name' => 'Раздел', 'slug' => 'bad-file', 'sort_order' => 0, 'image' => [UploadedFile::fake()->createWithContent('file.php', '<?php echo 1;')]])->assertHasFormErrors();
         $this->assertDatabaseMissing('categories', ['slug' => 'bad-file']);
         $this->actingAs(User::factory()->create())->get('/admin/categories')->assertForbidden();
+    }
+
+    public function test_admin_enters_rubles_with_optional_kopecks_and_existing_prices_are_preserved(): void
+    {
+        $this->loginAdmin();
+        $product = Product::factory()->create(['price' => 19990]);
+        $edit = TestAction::make('edit')->table($product);
+        Livewire::test(ManageProducts::class)->mountAction($edit)
+            ->assertSchemaStateSet(['price' => '199,90'])->callMountedAction()->assertHasNoFormErrors();
+        $this->assertEquals(19990, $product->fresh()->price);
+        foreach (['199' => 19900, '199,90' => 19990, '199.9' => 19990, '0,01' => 1, '1000000,00' => 100000000] as $input => $expected) {
+            Livewire::test(ManageProducts::class)->callAction($edit, data: ['price' => (string) $input])->assertHasNoFormErrors();
+            $this->assertEquals($expected, $product->fresh()->price);
+        }
+    }
+
+    public function test_invalid_ruble_prices_do_not_change_the_product(): void
+    {
+        $this->loginAdmin();
+        $product = Product::factory()->create(['price' => 19990]);
+        $edit = TestAction::make('edit')->table($product);
+        foreach (['0', '-10', '199,999', 'abc', '1e3', '1000000,01'] as $input) {
+            Livewire::test(ManageProducts::class)->callAction($edit, data: ['price' => $input])->assertHasFormErrors(['price']);
+            $this->assertEquals(19990, $product->fresh()->price);
+        }
     }
 }
