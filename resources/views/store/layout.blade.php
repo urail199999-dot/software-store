@@ -4,10 +4,12 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#101216"><meta name="description" content="NEXORA — магазин программ и цифровых ключей. Выберите программу и получите доступ на странице заказа.">
 <title>@yield('title', 'NEXORA — программы и цифровые ключи')</title>
-<link rel="stylesheet" href="{{ asset('store.css') }}?v=2">
-<script src="{{ asset('store.js') }}?v=2" defer></script>
+<link rel="stylesheet" href="{{ asset('store.css') }}?v=3">
+<script src="{{ asset('store.js') }}?v=3" defer></script>
 </head>
 <body>
+<canvas id="code-background" aria-hidden="true"></canvas>
+<button class="code-motion-toggle" type="button" data-code-motion aria-pressed="false" hidden>Пауза анимации</button>
 <a class="skip" href="#main">К содержимому</a>
 <header class="site-header"><div class="container header-inner">
 <a class="brand" href="{{ route('store') }}" aria-label="NEXORA — на главную"><span class="brand-symbol" aria-hidden="true">N<span>·</span></span><span>NEXORA<small>DIGITAL STORE</small></span></a>
