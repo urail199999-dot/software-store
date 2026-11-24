@@ -1,8 +1,15 @@
 (() => {
  const search = document.getElementById('catalog-search');
- const cards = [...document.querySelectorAll('[data-product]')];
+ const cards = [...document.querySelectorAll('[data-product], [data-category]')];
  const filters = [...document.querySelectorAll('[data-filter]')];
  let currentFilter = 'all';
+ cards.forEach((card, index) => { card.dataset.originalOrder = index; });
+ document.querySelector('[data-catalog-sort]')?.addEventListener('change', event => {
+  document.querySelectorAll('[data-sort-grid]').forEach(grid => {
+   const sorted = [...grid.children].sort((a, b) => event.target.value === 'name' ? a.dataset.name.localeCompare(b.dataset.name, 'ru') : event.target.value === 'price' ? Number(a.dataset.price) - Number(b.dataset.price) : Number(a.dataset.originalOrder) - Number(b.dataset.originalOrder));
+   sorted.forEach(card => grid.appendChild(card));
+  });
+ });
  function updateCatalog() {
   const query = (search?.value || '').trim().toLocaleLowerCase('ru');
   let visible = 0;
@@ -12,7 +19,7 @@
    if (matches) visible++;
   });
   const empty = document.getElementById('no-results');
-  if (empty) empty.hidden = visible > 0;
+  if (empty) empty.hidden = visible > 0 || cards.length === 0;
  }
  search?.addEventListener('input', updateCatalog);
  filters.forEach(button => button.addEventListener('click', () => {
@@ -117,4 +124,14 @@
  window.addEventListener('pagehide', () => { cancelAnimationFrame(frame); frame = 0; });
  window.addEventListener('pageshow', sync);
  resize(); sync();
+})();
+
+(() => {
+ const main = document.getElementById('product-main-image');
+ const thumbnails = [...document.querySelectorAll('[data-gallery-image]')];
+ thumbnails.forEach(button => button.addEventListener('click', () => {
+  if (!main) return;
+  main.src = button.dataset.galleryImage;
+  thumbnails.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+ }));
 })();

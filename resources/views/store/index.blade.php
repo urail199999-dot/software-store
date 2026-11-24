@@ -22,18 +22,10 @@
 <section id="catalog" class="container catalog-section">
 <div class="section-heading"><div><div class="eyebrow">ВЫБИРАЙ СВОИ ВОЗМОЖНОСТИ</div><h2>Каталог программ<span class="accent">.</span></h2></div><span class="catalog-count">{{ $products->count() }} {{ $products->count() === 1 ? 'продукт' : 'продуктов' }}</span></div>
 <div class="catalog-tools"><div class="filter-group" role="group" aria-label="Фильтр наличия"><button class="filter active" type="button" data-filter="all" aria-pressed="true">Все программы</button><button class="filter" type="button" data-filter="available" aria-pressed="false">В наличии</button></div><label class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="catalog-search" type="search" placeholder="Найти программу" aria-label="Найти программу"></label></div>
-@if($products->isNotEmpty())
-<div class="product-grid">@foreach($products as $product)
-<article class="product-card" data-product data-name="{{ $product->name }}" data-available="{{ $product->available_keys_count > 0 ? 'yes' : 'no' }}">
-<div class="product-cover"><span class="software-glyph" aria-hidden="true">[<b>{{ mb_substr($product->name, 0, 1) }}</b>]</span><span class="product-type">DIGITAL SOFTWARE</span><span class="stock {{ $product->available_keys_count > 0 ? '' : 'unavailable' }}">{{ $product->available_keys_count > 0 ? 'В наличии' : 'Нет в наличии' }}</span></div>
-<div class="product-body"><h3>{{ $product->name }}</h3><p class="description">{{ $product->description }}</p><div class="product-price"><span>{{ number_format($product->price / 100, 2, ',', ' ') }} <small>₽</small></span><small>Цифровой ключ</small></div>
-@if($product->available_keys_count > 0)<details class="purchase"><summary>Оформить заказ <span aria-hidden="true">+</span></summary><form action="{{ route('checkout', $product) }}" method="post">@csrf<label for="email-{{ $product->id }}">Ваш email</label><input id="email-{{ $product->id }}" type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" required maxlength="254" autocomplete="email"><button class="button full" type="submit">Перейти к заказу</button><p class="form-note">Ключ откроется после подтверждения оплаты.</p></form></details>
-@else<button class="sold-out" disabled>Ожидаем поступление</button>@endif</div></article>
-@endforeach</div>
-<p class="no-results" id="no-results" hidden>По вашему запросу ничего не найдено. Попробуйте другое название.</p>
-@else
-<div class="empty-catalog"><div class="empty-icon" aria-hidden="true">⊞</div><div><h3>Новые возможности уже на подходе</h3><p>Скоро здесь появятся программы и ключи активации.<br>Загляните позже — мы наполняем каталог.</p></div><span class="empty-label">КАТАЛОГ СКОРО ОТКРОЕТСЯ</span></div>
-@endif
+@include('store.categories')
+@include('store.products')
+@if($categories->isEmpty() && $products->isEmpty())<div class="empty-catalog"><div class="empty-icon" aria-hidden="true">⊞</div><div><h3>Новые возможности уже на подходе</h3><p>Мы наполняем каталог программ. Загляните немного позже.</p></div></div>@endif
+<p class="no-results" id="no-results" hidden>Ничего не найдено. Попробуйте другое название.</p>
 <p class="payment-note"><span aria-hidden="true">ⓘ</span> Онлайн-оплата пока не подключена. Оплату заказа подтверждает администратор.</p>
 </section>
 <section class="how-section" id="how-it-works"><div class="container"><div class="section-heading"><div><div class="eyebrow">ОТ ВЫБОРА ДО ЗАПУСКА</div><h2>Всё начинается с ключа<span class="accent">.</span></h2></div><p class="section-description">Понятный путь к твоей программе.<br>Без лишних шагов.</p></div>
