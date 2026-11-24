@@ -1,7 +1,22 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
-<title>@yield('title', 'Магазин программ')</title>
-<style>
-:root{font-family:system-ui,sans-serif;color:#172033;background:#f3f6fb}*{box-sizing:border-box}body{margin:0;font-size:16px}header{background:#fff;border-bottom:1px solid #dde3ed}nav,main,footer{max-width:1100px;margin:auto;padding:24px}nav{display:flex;justify-content:space-between;align-items:center}a{color:#2455c7}nav a{text-decoration:none}h1{font-size:clamp(28px,5vw,44px);margin:20px 0 12px}h2{font-size:22px}.muted{color:#59667b;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin:32px 0}.card{background:#fff;border:1px solid #dde3ed;border-radius:16px;padding:28px}.price{font-size:26px;font-weight:700;margin:24px 0}label{display:block;margin:16px 0 8px}input{display:block;width:100%;padding:13px;border:1px solid #aab6c9;border-radius:8px;font:inherit}button,.button{display:inline-block;background:#2455c7;color:white;border:0;border-radius:8px;padding:13px 20px;font:inherit;text-decoration:none;cursor:pointer;margin-top:16px}button:disabled{background:#718096;cursor:default}.notice{background:#e9f0ff;border:1px solid #ccdafa;padding:18px;border-radius:10px;line-height:1.6}.error{background:#ffeded;color:#9d2020;padding:16px;border-radius:8px}code{display:block;overflow-wrap:anywhere;background:#eff3fa;padding:20px;border-radius:8px;font-size:19px;user-select:all}footer{font-size:14px;color:#59667b}.description{white-space:pre-wrap;line-height:1.65}
-</style></head><body><header><nav><a href="{{ route('store') }}"><strong>Магазин программ</strong></a><a href="/admin">Управление</a></nav></header>
-<main>@if($errors->any())<div class="error">{{ $errors->first() }}</div>@endif @yield('content')</main><footer>Программы и ключи активации</footer></body></html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#101216"><meta name="description" content="NEXORA — магазин программ и цифровых ключей. Выберите программу и получите доступ на странице заказа.">
+<title>@yield('title', 'NEXORA — программы и цифровые ключи')</title>
+<link rel="stylesheet" href="{{ asset('store.css') }}?v=2">
+<script src="{{ asset('store.js') }}?v=2" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+<header class="site-header"><div class="container header-inner">
+<a class="brand" href="{{ route('store') }}" aria-label="NEXORA — на главную"><span class="brand-symbol" aria-hidden="true">N<span>·</span></span><span>NEXORA<small>DIGITAL STORE</small></span></a>
+<nav aria-label="Основная навигация"><a href="{{ route('store') }}#catalog">Каталог</a><a href="{{ route('store') }}#how-it-works">Как купить</a><a href="{{ route('store') }}#faq">Вопросы</a></nav>
+<a class="header-link" href="{{ route('store') }}#delivery">Получение ключа <span class="tiny-key" aria-hidden="true">⌘</span></a>
+</div></header>
+<main id="main">@if($errors->any())<div class="container"><div class="error" role="alert">{{ $errors->first() }}</div></div>@endif @yield('content')</main>
+<footer class="site-footer"><div class="container">
+<div class="footer-top"><a class="brand" href="{{ route('store') }}"><span class="brand-symbol" aria-hidden="true">N<span>·</span></span><span>NEXORA<small>DIGITAL STORE</small></span></a><p>Технологии под твои задачи.<br>Доступ — в твоих руках.</p><div><a href="{{ route('store') }}#catalog">Каталог программ</a><a href="{{ route('store') }}#faq">Вопросы и ответы</a></div></div>
+<div class="footer-bottom"><span>© {{ date('Y') }} NEXORA</span><span>Программы · Лицензии · Цифровой доступ</span><a href="/admin">Для администратора</a></div>
+</div></footer>
+</body></html>
